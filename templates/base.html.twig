@@ -85,6 +85,8 @@
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
 
+            {# <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script> #}
+
             <script>
 
                 /**
@@ -100,6 +102,9 @@
                     });
                 }// function
 
+                const TYPE_DIV = 1;
+                const TYPE_FRAME = 2;
+
                 /**
                  * Gestion des onglets
                  */
@@ -108,11 +113,7 @@
                     #listeOnglets = [];
                     #ongletActif = null;
 
-                    TYPE_DIV = 1;
-                    TYPE_ONGLET = 2;
-
                     constructor() {
-
                     }// constructor
 
                     /**
@@ -130,14 +131,18 @@
                             Onglets.creationOnglet(element);
                         });
 
-                        // Onglets.activeOnglet(this.listeOnglets[this.listeOnglets.length -1]);
+                        var ongletActif         = JSON.parse(sessionStorage.getItem("ongletActif"));
+
+                        if (ongletActif != null) {
+                            Onglets.ouvreOnglet(ongletActif.titre, ongletActif.route, ongletActif.type);
+                        }// if
 
                     }// function
 
                     /**
                      * Gestion ouverture de l'onglet
                      */
-                    static ouvreOnglet(p_titre, p_route, p_type = Onglets.TYPE_DIV) {
+                    static ouvreOnglet(p_titre, p_route, p_type) {
 
                         var ongletPresent           = false;
                         var chargement              = false;
@@ -181,7 +186,7 @@
                             divPage.dataset.source = p_route;
 
                             // Chargement du contenu de la page dans une div
-                            if (p_type = Onglets.TYPE_DIV) {
+                            if (p_type == TYPE_DIV) {
                                 var aPromise = fetch(p_route);
 
                                 // Work with Promise object:
@@ -194,8 +199,8 @@
                                     })
                                     .then(function(p_html)  {
 
-                                        setInnerHTML(divPage, p_html);
                                         conteneurPages.appendChild(divPage);
+                                        setInnerHTML(divPage, p_html);
                                     })
                                     .catch(function(error)  {
                                         divPage.innerHTML = "Erreur :" + error;
@@ -242,7 +247,7 @@
                         onglet.dataset.source = p_element.route;
 
                         // Gestion du clic sur l'onglet
-                        onglet.addEventListener("click", function() { Onglets.ouvreOnglet(p_element.titre, p_element.route, p_element.frame); });
+                        onglet.addEventListener("click", function() { Onglets.ouvreOnglet(p_element.titre, p_element.route, p_element.type); });
 
                         divOnglets.appendChild(onglet);
 
@@ -255,7 +260,7 @@
                     static activeOnglet(p_element) {
                         var ongletPrec     = JSON.parse(sessionStorage.getItem("ongletActif"));
 
-                        console.log(ongletPrec);
+                        // console.log(ongletPrec);
 
                         // désactive le précédent si il existe
                         if (ongletPrec != null) {
@@ -296,14 +301,11 @@
                         divPage != null ? divPage.remove() : null;
                         divOnglet != null ? divOnglet.remove() : null;
 
-                        // this.listeOnglets.forEach(element => console.log(element));
-
                         // Supression de l'entrée dans la liste des onglets
                         var indexElement        = -1;
                         var indexCpt            = 0;
                         
                         this.listeOnglets.forEach(function (element) {
-                            //console.log(element.route, p_element.route);
                             if (element.route == p_element.route) {
                                 indexElement = indexCpt;
                             }// if
@@ -312,21 +314,21 @@
 
                         indexElement !== -1 ? this.listeOnglets.splice(indexElement, 1) : null;
 
-                        // this.listeOnglets.forEach(element => console.log(indexElement, element));
-
                         // Mise à jour de la liste des onglets
                         sessionStorage.setItem("listeOnglets", JSON.stringify(this.listeOnglets));
 
                         var ongletActif         = JSON.parse(sessionStorage.getItem("ongletActif"));
 
                         // Si c'est l'onglet actif qui est fermé, activation du dernier dans la liste
+                        // Si c'est le dernier onglet de la liste, on met a zero l'onglet actif en session
                         if (ongletActif.route == ongletRoute) {
-                            const dernierOnglet = this.listeOnglets[this.listeOnglets.length - 1];
-                            // console.log(dernierOnglet);
-
-                            Onglets.activeOnglet(dernierOnglet);
+                            if (this.listeOnglets.length > 0) {
+                                const dernierOnglet = this.listeOnglets[this.listeOnglets.length - 1];
+                                Onglets.ouvreOnglet(dernierOnglet.titre, dernierOnglet.route, dernierOnglet.type);
+                            } else {
+                                sessionStorage.setItem("ongletActif", null);
+                            }// if
                         }// if
-
 
                     }// function 
 
@@ -375,11 +377,11 @@
             <div class="col-auto m-0 p-0 h-auto">
                 <nav class="vertical-menu">
                     <a href="{{ path('app_index') }}" class="active">Home</a>
-                    <a href="javascript:Onglets.ouvreOnglet('Onglets', '{{ path('app_onglets') }}');">Onglets</a>
-                    <a href="javascript:Onglets.ouvreOnglet('Menu 0', '{{ path('app_menu') }}');">Menu 0</a>
-                    <a href="javascript:Onglets.ouvreOnglet('Menu 1', '{{ path('app_menu1') }}');">Menu 1</a>
-                    <a href="javascript:Onglets.ouvreOnglet('Menu 2', '{{ path('app_menu2') }}');">Menu 2</a>
-                    <a href="javascript:Onglets.ouvreOnglet('Iframe 1', 'https://aquarelia.fr/', Onglets.TYPE_FRAME);">Iframe 1</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Onglets', '{{ path('app_onglets') }}', TYPE_DIV);">Onglets</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Table', '{{ path('app_table') }}', TYPE_DIV);">Table</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Menu 1', '{{ path('app_menu1') }}', TYPE_DIV);">Menu 1</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Menu 2', '{{ path('app_menu2') }}', TYPE_DIV);">Menu 2</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Iframe 1', 'https://aquarelia.fr/', TYPE_FRAME);">Iframe 1</a>
                 </nav>
             </div>
 

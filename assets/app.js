@@ -11,8 +11,21 @@ import './styles/app.scss';
 // start the Stimulus application
 import './bootstrap';
 
+// Bibliotheque Datatable
+import 'datatables.net'
+import 'datatables.net-dt'
+
+// Bibliotheque Kendo
+// import 'kendo-ui-core';
+// import '@progress/kendo-ui'
+
+require('@progress/kendo-ui/js/kendo.grid')
+require('@progress/kendo-ui/js/kendo.dropdownlist')
+
 // import $ from 'jquery';
 const $ = require('jquery');
 
 // create global $ and jQuery variables
 global.$ = global.jQuery = $;
+
+// var dt = require( 'datatables.net' )();
