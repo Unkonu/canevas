@@ -3,27 +3,411 @@
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
-        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
 
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
+
+            <style>
+
+                body {
+                    /* border: 5px solid green; */
+                    width: 100vw;
+                    max-width: 100w;
+                    height: 100vh;
+                    max-height: 100vh;
+                }
+
+                .entete_page {
+                    /* border: 1px solid red; */
+                    height: 50px;
+                    max-height: 50px;
+                    overflow: hidden;
+                }
+
+                .onglet_modele {
+                    display: none;
+                }
+
+                .onglet {
+                    overflow: hidden;
+                }
+
+                .onglet.actif {
+                    color: white;
+                    background-color: gray; 
+                }
+
+                .conteneur_pages {
+                    /* border: 1px solid red; */
+                    width: 99%;
+                    max-width: 99%;
+                    height: 94vh;
+                    max-height: 94vh;
+                    overflow: auto;
+                    overflow-x: hidden; /* Hide horizontal scrollbar */
+                }
+
+                nav {
+                    width: 100px;
+                    height: 100vh;
+                    transition-property: width;
+                    transition-duration: 0.3s;
+                    transition-delay: 0.0s;
+                }
+
+                nav:hover {
+                    width: 200px;
+                    transition-property: width;
+                    transition-duration: 0.3s;
+                    transition-delay: 0.2s;
+                }
+
+                .vertical-menu a {
+                background-color: #eee; /* Grey background color */
+                color: black; /* Black text color */
+                display: block; /* Make the links appear below each other */
+                padding: 12px; /* Add some padding */
+                text-decoration: none; /* Remove underline from links */
+                }
+
+                .vertical-menu a:hover {
+                background-color: #ccc; /* Dark grey background on mouse-over */
+                }
+
+                .vertical-menu a.active {
+                background-color: #04AA6D; /* Add a green color to the "active/current" link */
+                color: white;
+                }                
+            </style>
+
         {% endblock %}
 
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
+
+            <script>
+
+                /**
+                 * Active le code javascript aprés chargement par fetch
+                 */
+                function setInnerHTML(elm, html) {
+                    elm.innerHTML = html;
+                    Array.from(elm.querySelectorAll("script")).forEach( oldScript => {
+                        const newScript = document.createElement("script");
+                        Array.from(oldScript.attributes).forEach( attr => newScript.setAttribute(attr.name, attr.value) );
+                        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                }// function
+
+                /**
+                 * Gestion des onglets
+                 */
+                class Onglets {
+
+                    #listeOnglets = [];
+                    #ongletActif = null;
+
+                    TYPE_DIV = 1;
+                    TYPE_ONGLET = 2;
+
+                    constructor() {
+
+                    }// constructor
+
+                    /**
+                     * Chargement des onglets
+                     */
+                    static chargeOnglets() {
+
+                        // Gestion de la liste des onglets
+                        this.listeOnglets = JSON.parse(sessionStorage.getItem("listeOnglets")) ?? [];
+
+                        // console.log(this.listeOnglets);
+
+                        // Affichage des onglets stockés en mémoire
+                        this.listeOnglets.forEach(function(element) {
+                            Onglets.creationOnglet(element);
+                        });
+
+                        // Onglets.activeOnglet(this.listeOnglets[this.listeOnglets.length -1]);
+
+                    }// function
+
+                    /**
+                     * Gestion ouverture de l'onglet
+                     */
+                    static ouvreOnglet(p_titre, p_route, p_type = Onglets.TYPE_DIV) {
+
+                        var ongletPresent           = false;
+                        var chargement              = false;
+                        var conteneurPages          = document.querySelector("#conteneur_pages")
+
+                        // Parcours de la liste d'onglets pour vérifier que l'onglet n'existe pas déja
+                        this.listeOnglets.forEach(function(element) {
+                            if (element.titre == p_titre) {
+                                ongletPresent       = true;
+                            }// if
+                        });
+
+                        // Test l'existence du conteneur de la page
+                        if (ongletPresent) {
+                            var divPage             = document.querySelector(".conteneur_page[data-source=\"" + p_route + "\"]");
+
+                            // console.log(divPage);
+
+                            if (divPage == null) {
+                                chargement          = true;
+                            }// if
+                        } else {
+                            chargement              = true;
+                        }// if
+
+                        // console.log(ongletPresent, chargement);
+
+                        // Chargement du contenu de l'onglet si besoin, sinon affichage du conteneur
+                        if (chargement) {
+
+                            if (!ongletPresent) {
+                                this.listeOnglets.push({ "titre" : p_titre, "route" : p_route, "type" : p_type });
+                                sessionStorage.setItem("listeOnglets", JSON.stringify(this.listeOnglets));
+
+                                Onglets.creationOnglet({ "titre" : p_titre, "route" : p_route, "type" : p_type });
+                            }// if
+
+                            // Chargement du contenu de la page 
+                            var divPage = document.createElement("div")
+                            divPage.className = 'conteneur_page';
+                            divPage.dataset.source = p_route;
+
+                            // Chargement du contenu de la page dans une div
+                            if (p_type = Onglets.TYPE_DIV) {
+                                var aPromise = fetch(p_route);
+
+                                // Work with Promise object:
+                                aPromise
+                                    .then(function(response) {
+                                        if(!response.ok)  {
+                                            throw new Error("HTTP error, status = " + response.status);
+                                        }
+                                        return response.text();
+                                    })
+                                    .then(function(p_html)  {
+
+                                        setInnerHTML(divPage, p_html);
+                                        conteneurPages.appendChild(divPage);
+                                    })
+                                    .catch(function(error)  {
+                                        divPage.innerHTML = "Erreur :" + error;
+                                        conteneurPages.appendChild(divPage);
+                                    });
+                            } else {
+                                // Chargement du contenu de la page dans une iframe
+                                var iframe = document.createElement('iframe');
+                                iframe.src = encodeURI(p_route);
+                                iframe.width = "100%";
+                                iframe.height = conteneurPages.offsetHeight - 15;
+
+                                divPage.appendChild(iframe);
+                                conteneurPages.appendChild(divPage);
+                            }// if
+
+                        }// if
+
+                        Onglets.activeOnglet({"titre" : p_titre, "route" : p_route, "type": p_type});
+
+                        // console.log(this.listeOnglets);
+
+                    }// function
+
+                    /**
+                     * Création d'un onglet
+                     */
+                    static creationOnglet(p_element) {
+
+                        var divOnglets = document.querySelector(".conteneur_onglets")
+
+                        // Création a partir de l'onglet modele
+                        var ongletModele = document.querySelector(".onglet_modele");
+                        var onglet = ongletModele.cloneNode(true);
+
+                        var ongletTitre = onglet.querySelector("#titre_onglet");
+                        ongletTitre.innerHTML = p_element.titre;
+
+                        var boutonFermer = onglet.querySelector("#ferme_onglet");
+                        boutonFermer.addEventListener("click", function(event) { event.stopPropagation(); Onglets.fermeOnglet(p_element) });
+
+                        // Ajout des attributs
+                        onglet.classList.replace("onglet_modele", "onglet");
+                        onglet.dataset.source = p_element.route;
+
+                        // Gestion du clic sur l'onglet
+                        onglet.addEventListener("click", function() { Onglets.ouvreOnglet(p_element.titre, p_element.route, p_element.frame); });
+
+                        divOnglets.appendChild(onglet);
+
+                        return onglet;
+                    }// 
+
+                    /**
+                     * Activation de l'onglet sélectionné
+                     */
+                    static activeOnglet(p_element) {
+                        var ongletPrec     = JSON.parse(sessionStorage.getItem("ongletActif"));
+
+                        console.log(ongletPrec);
+
+                        // désactive le précédent si il existe
+                        if (ongletPrec != null) {
+                            var divOngletPrec       = document.querySelector(".onglet[data-source=\"" + ongletPrec.route + "\"]");
+                            divOngletPrec != null ? divOngletPrec.classList.remove("actif") : null;
+                        }
+
+                        // Active le nouveau
+                        var divOngletActif       = document.querySelector(".onglet[data-source=\"" + p_element.route + "\"]");
+                        divOngletActif != null ? divOngletActif.classList.add("actif") : null;
+
+                        sessionStorage.setItem("ongletActif", JSON.stringify(p_element));
+
+                        // Affichage de la page associée à l'onglet
+                        var divPages = document.querySelectorAll(".conteneur_page");
+                        divPages.forEach(element => element.style.display = "none")
+
+                        var divPage = document.querySelector(".conteneur_page[data-source=\"" + p_element.route + "\"]")
+                        if (divPage != null) {
+                            divPage.style.display = "block";
+                        }// if
+
+                    }// function
+
+                    /**
+                    * Gestion fermeture de l'onglet
+                    */
+                    static fermeOnglet(p_element) {
+
+                        // console.log(p_element, this.listeOnglets);
+
+                        const ongletRoute = p_element.route;
+
+                        // Supression conteneur de la page et conteneur onglet
+                        var divPage             = document.querySelector(".conteneur_page[data-source=\"" + ongletRoute + "\"]")
+                        var divOnglet           = document.querySelector(".onglet[data-source=\"" + ongletRoute + "\"]")
+
+                        divPage != null ? divPage.remove() : null;
+                        divOnglet != null ? divOnglet.remove() : null;
+
+                        // this.listeOnglets.forEach(element => console.log(element));
+
+                        // Supression de l'entrée dans la liste des onglets
+                        var indexElement        = -1;
+                        var indexCpt            = 0;
+                        
+                        this.listeOnglets.forEach(function (element) {
+                            //console.log(element.route, p_element.route);
+                            if (element.route == p_element.route) {
+                                indexElement = indexCpt;
+                            }// if
+                            indexCpt++;
+                        });
+
+                        indexElement !== -1 ? this.listeOnglets.splice(indexElement, 1) : null;
+
+                        // this.listeOnglets.forEach(element => console.log(indexElement, element));
+
+                        // Mise à jour de la liste des onglets
+                        sessionStorage.setItem("listeOnglets", JSON.stringify(this.listeOnglets));
+
+                        var ongletActif         = JSON.parse(sessionStorage.getItem("ongletActif"));
+
+                        // Si c'est l'onglet actif qui est fermé, activation du dernier dans la liste
+                        if (ongletActif.route == ongletRoute) {
+                            const dernierOnglet = this.listeOnglets[this.listeOnglets.length - 1];
+                            // console.log(dernierOnglet);
+
+                            Onglets.activeOnglet(dernierOnglet);
+                        }// if
+
+
+                    }// function 
+
+                    /**
+                     * Fermeture de tous les onglets
+                     */
+                    static fermeOnglets() {
+                        // Remise à zéro tableau onglets et session
+                        this.listeOnglets       = [];
+                        sessionStorage.setItem("listeOnglets", JSON.stringify(this.listeOnglets));
+                        sessionStorage.setItem("ongletActif", null);
+
+                        // Remise à zéro containers onglets et pages
+                        document.querySelector(".conteneur_pages").innerHTML = "";
+                        document.querySelector(".conteneur_onglets").innerHTML = "";
+
+                    }// function
+
+                }// class Onglets
+
+                // Execution aprés la fin du chargement de la page
+                document.addEventListener('DOMContentLoaded', function() {
+
+                    // Mécanique de désactivation du retour arriere - création d'un entrée dans l'historique
+                    window.history.pushState("Titre", "Titre", "{{ path('app_index') }}" );
+
+                    // Chargement des onglets
+                    Onglets.chargeOnglets();
+
+                });
+
+                // Mécanique de désactivation du retour arriere - Boucle sur la meme entrée de l'historique
+                window.onpopstate = function(event) {
+                    window.history.pushState("Titre", "Titre", "{{ path('app_index') }}" );
+                }// event
+
+            </script>
+
         {% endblock %}
 
     </head>
-    <body>
+    <body class="overflow-hidden">
 
-        <nav>
-            <div class="border border-primary">menu1</div>
-            <div>menu2</div>
+        <div class="row responsive h-auto">
 
-        </nav>
+            <div class="col-auto m-0 p-0 h-auto">
+                <nav class="vertical-menu">
+                    <a href="{{ path('app_index') }}" class="active">Home</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Onglets', '{{ path('app_onglets') }}');">Onglets</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Menu 0', '{{ path('app_menu') }}');">Menu 0</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Menu 1', '{{ path('app_menu1') }}');">Menu 1</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Menu 2', '{{ path('app_menu2') }}');">Menu 2</a>
+                    <a href="javascript:Onglets.ouvreOnglet('Iframe 1', 'https://aquarelia.fr/', Onglets.TYPE_FRAME);">Iframe 1</a>
+                </nav>
+            </div>
 
+            <div class="col m-0 p-0 h-auto">
 
-        {% block body %}{% endblock %}
+                <header class="entete_page d-flex flex-inline">
+                    {# Bouton de fermture des onglets #}
+                    <button id="ferme_onglets" class="btn btn-success btn-sm" onclick="javascript:Onglets.fermeOnglets(this);"><<</button>
+                    {# OngletModele - non visible #}
+                    <span class="onglet_modele border rounded m-1 p-1 text-nowrap">
+                        <span id="titre_onglet"></span>
+                        <button id="ferme_onglet" class="btn btn-sm m-0 p-1">x</button>
+                    </span>                    
+                    {# Conteneur Onglets #}
+                    <div class="conteneur_onglets d-flex flex-inline">
+                    </div>
+                </header>
+
+                {# Conteneur Pages #}
+                <div id="conteneur_pages" class="conteneur_pages">
+                </div>
+
+                {# <footer>
+                    pied
+                </footer> #}
+
+            </div>
+        <div>
+
     </body>
 </html>
