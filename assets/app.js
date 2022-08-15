@@ -20,7 +20,8 @@ import 'datatables.net-dt'
 // import '@progress/kendo-ui'
 
 require('@progress/kendo-ui/js/kendo.grid')
-require('@progress/kendo-ui/js/kendo.dropdownlist')
+require('@progress/kendo-ui/js/kendo.all.min')
+// require('@progress/kendo-ui/js/kendo.dropdownlist')
 
 // import $ from 'jquery';
 const $ = require('jquery');

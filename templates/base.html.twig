@@ -198,7 +198,6 @@
                                         return response.text();
                                     })
                                     .then(function(p_html)  {
-
                                         conteneurPages.appendChild(divPage);
                                         setInnerHTML(divPage, p_html);
                                     })
@@ -371,6 +370,13 @@
 
     </head>
     <body class="overflow-hidden">
+
+        <div class="chargement k-loading-mask" style="width: 100%; height: 100%; top: 0px; left: 0px; display: none;">
+            <span class="k-loading-text">Loading...</span>
+            <div class="k-loading-image"></div>
+            <div class="k-loading-color"></div>
+        </div>
+
 
         <div class="row responsive h-auto">
 

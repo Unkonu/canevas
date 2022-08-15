@@ -1,16 +1,54 @@
 
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
 <script>
+    $("#chart").kendoChart({
+        theme: "bootstrap",
+        title: {
+            text: "Site Visitors Stats \n /thousands/"
+        },
+        legend: {
+            visible: false
+        },
+        seriesDefaults: {
+            type: "bar"
+        },
+        series: [{
+            name: "Total Visits",
+            data: [56000, 63000, 74000, 91000, 117000, 138000]
+        }, {
+            name: "Unique visitors",
+            data: [52000, 34000, 23000, 48000, 67000, 83000]
+        }],
+        valueAxis: {
+            max: 140000,
+            line: {
+                visible: false
+            },
+            minorGridLines: {
+                visible: true
+            },
+            labels: {
+                rotation: "auto"
+            }
+        },
+        categoryAxis: {
+            categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            majorGridLines: {
+                visible: false
+            }
+        },
+        tooltip: {
+            visible: true,
+            template: "#= series.name #: #= value #"
+        }
+    });
 </script>
 
-<div class="example-wrapper">
-    This friendly message is coming from:<BR>
+<div>
+    
+    <div id="chart"></div>
+
 </div>
 
 {% endblock %}

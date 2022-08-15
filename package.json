@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@popperjs/core": "^2.11.6",
+        "@progress/kendo-theme-bootstrap": "^5.6.0",
         "@progress/kendo-ui": "^2022.2.802",
         "datatables.net": "^1.12.1",
         "datatables.net-dt": "^1.12.1",
