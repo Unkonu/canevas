@@ -1,7 +1,8 @@
 #Dockerfile pour apache2 - php8 - symfony
-FROM debian:latest
+FROM debian:latest 
+# AS docker_symfony_canevas
 
-WORKDIR /var/www
+WORKDIR /var/www/symfony/canevas
 
 RUN apt-get update -y && apt-get upgrade -y
 
@@ -86,7 +87,7 @@ ENV MYSQL_HOSTNAME=172.17.0.1
 RUN useradd unknown --home /home/unknown --create-home --groups www-data --gid www-data --shell /bin/bash
 
 # Ports du container ouverts
-EXPOSE 80
+EXPOSE 80/tcp
 
 #ENTRYPOINT ["/usr/sbin/apache2", "-k", "start"]
 

@@ -13,7 +13,7 @@
 
 	// The 'service' property is the name of the service for the container that VS Code should
 	// use. Update this value and .devcontainer/docker-compose.yml to the real service name.
-	"service": "symfony",
+	"service": "symfony-canevas",
 
   // Container user VS Code should use when connecting
   "remoteUser": "unknown",
@@ -30,7 +30,7 @@
   // "extensions": ["dbaeumer.vscode-eslint"],
 
   // An array port numbers to forward
-  "forwardPorts": [80]
+  // "forwardPorts": [80]
 
   // // Set environment variables for VS Code and sub-processes
   // "remoteEnv": { "MY_VARIABLE": "some-value" }
