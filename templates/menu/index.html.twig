@@ -1,7 +1,19 @@
 
 
 {% block body %}
+
+<div>
+    
+    <div id="chart"></div>
+
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+
 <script>
+
     $("#chart").kendoChart({
         theme: "bootstrap",
         title: {
@@ -45,11 +57,4 @@
     });
 </script>
 
-<div>
-    
-    <div id="chart"></div>
-
-</div>
-
 {% endblock %}
-

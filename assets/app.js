@@ -15,6 +15,10 @@ import './bootstrap';
 import 'datatables.net'
 import 'datatables.net-dt'
 
+
+require('datatables.net/js/jquery.dataTables');
+require('datatables-bootstrap/js/dataTables.bootstrap');
+
 // Bibliotheque Kendo
 // import 'kendo-ui-core';
 // import '@progress/kendo-ui'
